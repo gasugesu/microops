@@ -18,7 +18,8 @@
 	"extensions": [
 		"ms-vscode.cpptools",
 		"metaseed.metago",
-		"k--kato.intellij-idea-keybindings"
+		"k--kato.intellij-idea-keybindings",
+		"visualstudioexptteam.vscodeintellicode"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
