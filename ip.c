@@ -8,7 +8,7 @@
 static void
 ip_input(const uint8_t *data, size_t len, struct net_device *dev)
 {
-    debug("dev=%s, len=%zu", dev->name, len);
+    debugf("dev=%s, len=%zu", dev->name, len);
     debugdump(data, len);
 }
 
