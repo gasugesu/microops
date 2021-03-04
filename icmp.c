@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <stdint.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -78,7 +78,7 @@ icmp_dump(const uint8_t *data, size_t len)
         fprintf(stderr, "      seq: %u\n", ntoh16(echo->seq));
         break;
     default:
-        fprintf(stderr, "   values: %0x%08x\n", ntoh32(hdr->values));
+        fprintf(stderr, "   values: 0x%08x\n", ntoh32(hdr->values));
     }
 #ifdef HEXDUMP
     hexdump(stderr, data, len);
@@ -103,7 +103,7 @@ void icmp_input(const uint8_t *data, size_t len, ip_addr_t src, ip_addr_t dst, s
         errorf("checksum error, sum=0x%04x, verify=0x%04x", ntoh16(hdr->sum), ntoh16(cksum16((uint16_t *)data, len, -hdr->sum)));
         return;
     }
-    debugf("%s => %s, len=%zu", ip_addr_ntop(src, addr2, sizeof(addr2)), len);
+    debugf("%s => %s, len=%zu", ip_addr_ntop(src, addr1, sizeof(addr1)), ip_addr_ntop(src, addr2, sizeof(addr2)), len);
     icmp_dump(data, len);
     switch (hdr->type)
     {
@@ -140,7 +140,7 @@ int icmp_output(uint8_t type, uint8_t code, uint32_t values, const uint8_t *data
     hdr->sum = cksum16((uint16_t *)hdr, msg_len, 0);
     debugf("%s => %s, len=%zu", ip_addr_ntop(src, addr1, sizeof(addr1)), ip_addr_ntop(dst, addr2, sizeof(addr2)), msg_len);
     icmp_dump((uint8_t *)hdr, msg_len);
-    return ip_output(IP_PROTOCOL_ICMP, (int8_t *)hdr, msg_len, src, dst);
+    return ip_output(IP_PROTOCOL_ICMP, (uint8_t *)hdr, msg_len, src, dst);
 }
 
 int icmp_init(void)

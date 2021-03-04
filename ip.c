@@ -179,7 +179,7 @@ ip_input(const uint8_t *data, size_t len, struct net_device *dev)
 
     if (len < IP_HDR_SIZE_MIN)
     {
-        errorf("ip version error: v=%u", v);
+        errorf("too short");
         return;
     }
     hdr = (struct ip_hdr *)data;
@@ -342,7 +342,7 @@ ip_output(uint8_t protocol, const uint8_t *data, size_t len, ip_addr_t src, ip_a
         return -1;
     }
     id = ip_generate_id();
-    if (ip_output_core(iface, protocol, data, len, iface->unicast, dst, id, 0) == 0)
+    if (ip_output_core(iface, protocol, data, len, iface->unicast, dst, id, 0) == -1)
     {
         errorf("ip_output_core() failure");
         return -1;
@@ -357,7 +357,7 @@ int ip_protocol_register(uint8_t type, void (*handler)(const uint8_t *data, size
 
     for (entry = protocols; entry; entry = entry->next)
     {
-        if (entry->type = type)
+        if (entry->type == type)
         {
             errorf("already exists, type=%u", type);
             return -1;
