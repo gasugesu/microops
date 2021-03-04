@@ -229,7 +229,7 @@ net_thread(void *arg)
         }
         if (!count)
         {
-            sleep(NET_THREAD_SLEEP_TIME);
+            usleep(NET_THREAD_SLEEP_TIME);
         }
     }
     return NULL;

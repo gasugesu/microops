@@ -135,7 +135,7 @@ ip_input(const uint8_t *data, size_t len, struct net_device *dev)
         return;
     }
     debugf("dev=%s, protocol=%u, total=%u", dev->name, hdr->protocol, total);
-    ip_dump(data, len);
+    ip_dump(data, total);
 }
 
 int ip_init(void)
