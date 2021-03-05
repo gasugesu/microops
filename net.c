@@ -26,7 +26,8 @@ struct net_protocol_queue_entry
     size_t len;
 };
 
-struct net_timer {
+struct net_timer
+{
     struct net_timer *next;
     struct timeval interval;
     struct timeval last;
@@ -150,11 +151,12 @@ int net_device_output(struct net_device *dev, uint16_t type, const uint8_t *data
         errorf("too long, dev=%s, mut=%u, len=%zu", dev->name, dev->mtu, len);
         return -1;
     }
-    debugf("dev=%s, type=0x04x, len=%zu", dev->name, type, len);
+    debugf("dev=%s, type=0x%04x, len=%zu", dev->name, type, len);
     debugdump(data, len);
     if (dev->ops->transmit(dev, type, data, len, dst) == -1)
     {
         errorf("device transmit failure, dev=%s, len=%zu", dev->name, len);
+        return -1;
     }
     return 0;
 }
@@ -225,10 +227,23 @@ int net_protocol_register(uint16_t type, void (*handler)(const uint8_t *data, si
 }
 
 /* NOTE: must not be call after net_run() */
-int
-net_timer_register(struct timeval interval, void (*handler)(void))
+int net_timer_register(struct timeval interval, void (*handler)(void))
 {
+    struct net_timer *timer;
 
+    timer = calloc(1, sizeof(*timer));
+    if (!timer)
+    {
+        errorf("calloc() failure");
+        return -1;
+    }
+    timer->interval = interval;
+    gettimeofday(&timer->last, NULL);
+    timer->handler = handler;
+    timer->next = timers;
+    timers = timer;
+    infof("registered: interval={%d, %d}", interval.tv_sec, interval.tv_usec);
+    return 0;
 }
 
 #define NET_THREAD_SLEEP_TIME 1000 /* micro seconds */
@@ -243,6 +258,8 @@ net_thread(void *arg)
     struct net_device *dev;
     struct net_protocol *proto;
     struct net_protocol_queue_entry *entry;
+    struct net_timer *timer;
+    struct timeval now, diff;
 
     while (!terminate)
     {
@@ -273,6 +290,16 @@ net_thread(void *arg)
                 proto->handler((uint8_t *)(entry + 1), entry->len, entry->dev);
                 free(entry);
                 count++;
+            }
+        }
+        for (timer = timers; timer; timer = timer->next)
+        {
+            gettimeofday(&now, NULL);
+            timersub(&now, &timer->last, &diff);
+            if (timercmp(&timer->interval, &diff, <) != 0)
+            { /* true (!0) or false (0) */
+                timer->handler();
+                timer->last = now;
             }
         }
         if (!count)
