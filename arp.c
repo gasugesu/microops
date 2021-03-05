@@ -340,6 +340,7 @@ arp_timer(void)
             }
         }
     }
+    pthread_mutex_unlock(&mutex);
 }
 
 int arp_init(void)
