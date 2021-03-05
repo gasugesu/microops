@@ -39,19 +39,19 @@ icmp_type_ntoa(uint8_t type)
     case ICMP_TYPE_REDIRECT:
         return "Redirect";
     case ICMP_TYPE_ECHO:
-        return "echo";
+        return "Echo";
     case ICMP_TYPE_TIME_EXCEEDED:
-        return "TimeExceed";
+        return "TimeExceeded";
     case ICMP_TYPE_PARAM_PROBLEM:
-        return "ParameterProblme";
+        return "ParameterProblem";
     case ICMP_TYPE_TIMESTAMP:
         return "Timestamp";
     case ICMP_TYPE_TIMESTAMPREPLY:
         return "TimestampReply";
     case ICMP_TYPE_INFO_REQUEST:
-        return "InfomationRequest";
+        return "InformationRequest";
     case ICMP_TYPE_INFO_REPLY:
-        return "InfomationReply";
+        return "InformationReply";
     }
     return "Unknown";
 }
@@ -79,6 +79,7 @@ icmp_dump(const uint8_t *data, size_t len)
         break;
     default:
         fprintf(stderr, "   values: 0x%08x\n", ntoh32(hdr->values));
+        break;
     }
 #ifdef HEXDUMP
     hexdump(stderr, data, len);
@@ -103,7 +104,7 @@ void icmp_input(const uint8_t *data, size_t len, ip_addr_t src, ip_addr_t dst, s
         errorf("checksum error, sum=0x%04x, verify=0x%04x", ntoh16(hdr->sum), ntoh16(cksum16((uint16_t *)data, len, -hdr->sum)));
         return;
     }
-    debugf("%s => %s, len=%zu", ip_addr_ntop(src, addr1, sizeof(addr1)), ip_addr_ntop(src, addr2, sizeof(addr2)), len);
+    debugf("%s => %s, len=%zu", ip_addr_ntop(src, addr1, sizeof(addr1)), ip_addr_ntop(dst, addr2, sizeof(addr2)), len);
     icmp_dump(data, len);
     switch (hdr->type)
     {
